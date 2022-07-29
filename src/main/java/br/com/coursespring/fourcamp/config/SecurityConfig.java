@@ -1,5 +1,7 @@
-package br.com.coursespring.fourcamp;
+package br.com.coursespring.fourcamp.config;
 
+import br.com.coursespring.fourcamp.security.jwt.JwtAuthFilter;
+import br.com.coursespring.fourcamp.security.jwt.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
@@ -7,20 +9,30 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import br.com.coursespring.fourcamp.service.impl.UsuarioServiceImpl;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	private UsuarioServiceImpl usuarioService;
+	@Autowired
+	private JwtService jwtService;
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public OncePerRequestFilter jwtFilter() {
+		return new JwtAuthFilter(jwtService, usuarioService);
 	}
 
 	@Override
@@ -35,7 +47,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.hasRole("ADMIN").antMatchers(HttpMethod.POST, "/api/usuarios/**").permitAll().anyRequest()
 				.authenticated()
 				.and()
-				.httpBasic();
+				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+				.and()
+				.addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class)
 		;
 	}
 

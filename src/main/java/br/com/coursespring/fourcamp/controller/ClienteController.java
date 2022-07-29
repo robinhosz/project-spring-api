@@ -17,13 +17,14 @@ import java.util.List;
 @RequestMapping("/api/clientes")
 public class ClienteController {
 
+	public static final String CLIENTE_NAO_ENCONTRADO = "Cliente Não encontrado";
 	@Autowired
 	Clientes clienteRepository;
 
 	@GetMapping("{id}")
 	public Cliente getClienteById(@PathVariable Integer id) {
 		return clienteRepository.findById(id)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente Não encontrado"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CLIENTE_NAO_ENCONTRADO));
 
 	}
 
@@ -41,7 +42,7 @@ public class ClienteController {
 			clienteRepository.delete(cliente); 
 				return cliente;
 		})
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente Não encontrado"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CLIENTE_NAO_ENCONTRADO));
 
 	}
 
@@ -52,7 +53,7 @@ public class ClienteController {
 			cliente.setId(clienteExistente.getId());
 			clienteRepository.save(cliente);
 			return ResponseEntity.noContent().build();
-		}).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente Não encontrado"));
+		}).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, CLIENTE_NAO_ENCONTRADO));
 	}
 
 	@GetMapping
